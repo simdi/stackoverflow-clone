@@ -1,5 +1,5 @@
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
-import { Controller, HttpCode, Post, Body, Request, Param, Get, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, HttpCode, Post, Body, Request, Param, Get, UseGuards, HttpStatus, Put, Query } from '@nestjs/common';
 import { QuestionService } from '../../services/question/question.service';
 import { IQuestion } from '../../models/question.schema';
 import { QuestionDTO } from '../../dto/question.dto';
@@ -16,16 +16,16 @@ export class QuestionController {
 
   @Get()
   @ApiOperation({ summary: 'Get all Questions' })
-  @ApiQuery({ name: 'page' })
-  @ApiQuery({ name: 'limit' })
+  @ApiQuery({ name: 'page', required: true, example: 1 })
+  @ApiQuery({ name: 'limit', required: true, example: 10 })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The found records',
     type: [QuestionDTO],
   })
   // @UseGuards(JwtAuthGuard, AuthGuard)
-  async findAll(): Promise<IQuestion[]> {
-    return await this.questionService.findAll();
+  async findAll(@Query() query): Promise<IQuestion[]> {
+    return await this.questionService.findAll(query);
   }
 
   @Get(':questionId')
@@ -50,12 +50,36 @@ export class QuestionController {
   async findById(@Param('questionId') id): Promise<IQuestion> {
     return await this.questionService.findById(id);
   }
+  
+  @Put(':questionId/vote/:voteType')
+  @ApiOperation({ summary: 'Get a single Question' })
+  @ApiParam({ name: 'questionId', type: String })
+  @ApiParam({ name: 'voteType', example: 1, type: Number })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The found record',
+    type: QuestionDTO,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad Request',
+    type: ErrorDTO
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Question Not Found',
+    type: ErrorDTO
+  })
+  // @UseGuards(JwtAuthGuard, AuthGuard)
+  async voteById(@Param() param): Promise<IQuestion> {
+    return await this.questionService.voteById(param);
+  }
 
   @Post()
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create Question' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.CREATED,
     description: 'Question created successfully',
     type: CreatedDTO,
   })

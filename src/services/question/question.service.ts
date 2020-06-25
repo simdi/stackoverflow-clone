@@ -23,8 +23,12 @@ export class QuestionService {
     }
   }
 
-  async findAll(): Promise<IQuestion[]> {
-    return await this.questionModel.find();
+  async findAll(query: { page: string, limit: string }): Promise<any> {
+    return await this.questionModel.paginate({}, {
+      page: parseInt(query.page),
+      limit: parseInt(query.limit),
+      sort: { 'meta.created': 'desc', 'meta.updated': 'desc' }
+    });
   }
 
   async findById(id: string): Promise<IQuestion> {
@@ -34,6 +38,26 @@ export class QuestionService {
         throw new HttpException('Invalid question id', HttpStatus.BAD_REQUEST);
       }
       return findById;
+    } catch (error) {
+      await this.helperService.catchValidationError(error);
+    }
+  }
+  
+  async voteById(param: { questionId: string, voteType: number }): Promise<any> {
+    const { questionId, voteType } = param;
+
+    try {
+      const updateOne = await this.questionModel.updateOne(
+        { _id: questionId },
+        { $inc: { vote: voteType == 1 ? -1 : 1 }}
+      );
+      console.log('FindByOne', updateOne);
+      // @Todo
+      // Create a record in the votes collection to indicate that a user has voted
+      if (!updateOne) {
+        throw new HttpException('Invalid question id', HttpStatus.BAD_REQUEST);
+      }
+      return { success: true };
     } catch (error) {
       await this.helperService.catchValidationError(error);
     }
