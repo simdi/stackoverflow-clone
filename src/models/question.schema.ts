@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { MetaSchema, IMeta } from './common.schema';
-import paginate from 'mongoose-paginate';
+import * as paginate from 'mongoose-paginate';
 import { v4 as uuid } from 'uuid';
 
 paginate.paginate.options = {

@@ -10,6 +10,4 @@ export class CreatedDTO {
 export class LoginResponseDTO {
   @ApiProperty({ type: String })
   access_token: string;
-  @ApiProperty({ type: Object })
-  user: Object
 }
