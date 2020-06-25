@@ -1,0 +1,18 @@
+{
+  "server": {
+    "tlsCert": "",
+    "tlsKey": "",
+    "tlsCa": "",
+    "port": 3000
+  },
+  "mongo": {
+    "host": "127.0.0.1",
+    "database": "stackoverflow-clone",
+    "user": "",
+    "pass": "",
+    "port": 27017
+  },
+  "jwt": {
+    "expires": 86400
+  }
+}
