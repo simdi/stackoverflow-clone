@@ -23,7 +23,7 @@ export class UserController {
     description: 'The found records',
     type: [UserDTO],
   })
-  // @UseGuards(JwtAuthGuard, AuthGuard)
+  @UseGuards(JwtAuthGuard, AuthGuard)
   async findAll(@Query() query): Promise<IUser[]> {
     return await this.userService.findAll(query);
   }
@@ -46,7 +46,7 @@ export class UserController {
     description: 'User Not Found',
     type: ErrorDTO
   })
-  // @UseGuards(JwtAuthGuard, AuthGuard)
+  @UseGuards(JwtAuthGuard, AuthGuard)
   async findById(@Param('userId') id): Promise<IUser> {
     return await this.userService.findById(id);
   }
@@ -64,7 +64,7 @@ export class UserController {
     description: 'Bad Request',
     type: ErrorDTO
   })
-  // @UseGuards(JwtAuthGuard, AuthGuard)
+  @UseGuards(JwtAuthGuard, AuthGuard)
   async create(@Body() user: UserDTO): Promise<CreatedDTO | LoginResponseDTO> {
     return await this.userService.create(user);
   }

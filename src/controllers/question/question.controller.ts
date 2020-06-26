@@ -23,7 +23,7 @@ export class QuestionController {
     description: 'The found records',
     type: [QuestionDTO],
   })
-  // @UseGuards(JwtAuthGuard, AuthGuard)
+  @UseGuards(JwtAuthGuard, AuthGuard)
   async findAll(@Query() query): Promise<IQuestion[]> {
     return await this.questionService.findAll(query);
   }
@@ -46,7 +46,7 @@ export class QuestionController {
     description: 'Question Not Found',
     type: ErrorDTO
   })
-  // @UseGuards(JwtAuthGuard, AuthGuard)
+  @UseGuards(JwtAuthGuard, AuthGuard)
   async findById(@Param('questionId') id): Promise<IQuestion> {
     return await this.questionService.findById(id);
   }
@@ -70,7 +70,7 @@ export class QuestionController {
     description: 'Question Not Found',
     type: ErrorDTO
   })
-  // @UseGuards(JwtAuthGuard, AuthGuard)
+  @UseGuards(JwtAuthGuard, AuthGuard)
   async voteById(@Param() param): Promise<IQuestion> {
     return await this.questionService.voteById(param);
   }
@@ -88,7 +88,7 @@ export class QuestionController {
     description: 'Bad Request',
     type: ErrorDTO
   })
-  // @UseGuards(JwtAuthGuard, AuthGuard)
+  @UseGuards(JwtAuthGuard, AuthGuard)
   async create(@Body() question: QuestionDTO): Promise<CreatedDTO> {
     return await this.questionService.create(question);
   }
