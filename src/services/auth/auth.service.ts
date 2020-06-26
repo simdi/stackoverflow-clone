@@ -37,7 +37,7 @@ export class AuthService {
     const { email, role } = user;
 
     return {
-      sub: user._id,
+      userId: user._id,
       role,
       email,
     };

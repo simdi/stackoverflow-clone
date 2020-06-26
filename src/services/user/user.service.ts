@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus, InternalServerErrorException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject, forwardRef } from '@nestjs/common';
 import { IUser } from '../../models/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -25,8 +25,7 @@ export class UserService {
 
   async create(user: UserDTO, action = 'user'): Promise<CreatedDTO | LoginResponseDTO> {
     try {
-      const userWithRole = { ...user, role: 'regular' };
-      const newUser = new this.userModel(userWithRole);
+      const newUser = new this.userModel(user);
       const savedUser = await newUser.save();
 
       if (!savedUser) {
@@ -54,7 +53,7 @@ export class UserService {
 
   async findById(id: string): Promise<IUser> {
     try {
-      const findById = await this.userModel.findById(id).populate('permissions');
+      const findById = await this.userModel.findById(id);
       if (!findById) {
         throw new HttpException('Invalid user id', HttpStatus.BAD_REQUEST);
       }
@@ -66,7 +65,7 @@ export class UserService {
 
   async findOne(email: string): Promise<IUser> {
     try {
-      const findById = await this.userModel.findOne({ email }).select({ password: 1, email: 1, roleId: 1 }).populate('permissions');
+      const findById = await this.userModel.findOne({ email }).select({ password: 1, email: 1, role: 1 });
       if (!findById) {
         throw new HttpException('Invalid credentials', HttpStatus.BAD_REQUEST);
       }

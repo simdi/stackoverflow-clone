@@ -24,12 +24,12 @@ export interface IUser extends mongoose.Document {
 
 export const UserSchema = new Schema({
   uuid: { type: String },
-  role: { type: String, enum: ['regular', 'admin'] },
+  role: { type: String, enum: ['REGULAR', 'ADMIN'], default: 'REGULAR' },
   email: { type: String, unique: true, trim: true, required: true, lowercase: true },
   password: { type: String, required: true, select: false },
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
-  meta: { type: MetaSchema },
+  meta: { type: MetaSchema, select: false },
 });
 
 const addMeta = async(ctx) => ctx['meta'] = MetaSchema;

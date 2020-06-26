@@ -1,5 +1,5 @@
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
-import { Controller, HttpCode, Post, Body, Request, Param, Get, UseGuards, HttpStatus, Put, Query } from '@nestjs/common';
+import { Controller, HttpCode, Post, Body, Param, Get, UseGuards, HttpStatus, Query } from '@nestjs/common';
 import { UserService } from '../../services/user/user.service';
 import { IUser } from '../../models/user.schema';
 import { UserDTO } from '../../dto/user.dto';

@@ -89,8 +89,10 @@ export class QuestionController {
     type: ErrorDTO
   })
   @UseGuards(JwtAuthGuard, AuthGuard)
-  async create(@Body() question: QuestionDTO): Promise<CreatedDTO> {
-    return await this.questionService.create(question);
+  async create(@Body() question: QuestionDTO, @Request() req): Promise<CreatedDTO> {
+    const { user } = req;
+    console.log('Q user', user);
+    return await this.questionService.create(question, user);
   }
 }
 

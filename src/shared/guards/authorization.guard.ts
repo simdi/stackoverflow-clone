@@ -1,35 +1,23 @@
 import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from "@nestjs/common";
-import { HelperService } from "../helpers/helper";
-
-const crud = {
-  get: 'r',
-  post: 'c',
-  put: 'u',
-  patch: 'u',
-  delete: 'd',
-};
+import { UserService, USER_TYPE } from "../../services/user/user.service";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const { user, method, url } = request;
+    const { user } = request;
 
     if (user) {
-      const { permissions } = user;
-      const { isValid } = await this.authorize(permissions, { domain: 'www', fingerprint: url.split(HelperService.APP_PREFIX)[1], method });
+      const { role } = user;
+      const { isValid } = await this.authorize(role);
       return isValid;
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
   }
 
-  async authorize(permissions: {}, { domain, method, fingerprint }): Promise<{ isValid: boolean }> {
+  async authorize(role: USER_TYPE): Promise<{ isValid: boolean }> {
     return {
-      isValid: !!permissions[domain].find(({ slug }, i, arr) => {
-        return (
-          arr[i][crud[method.toLowerCase()]] && [0, 1].includes(fingerprint.toLowerCase().search(slug.toLowerCase()))
-        );
-      }),
+      isValid: Object.values(UserService.USER_TYPE).includes(role),
     };
   };
 }

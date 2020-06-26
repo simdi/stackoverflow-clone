@@ -13,11 +13,12 @@ export class QuestionService {
     private readonly helperService: HelperService,
   ) {}
 
-  async create(question: QuestionDTO): Promise<CreatedDTO> {
+  async create(question: QuestionDTO, user: any): Promise<CreatedDTO> {
     try {
-        const newQuestion = new this.questionModel(question);
-        const savedQuestion = await newQuestion.save();
-        return { id: savedQuestion._id };
+      const addUserIdToQuestion = { ...question, userId: user.userId };
+      const newQuestion = new this.questionModel(addUserIdToQuestion);
+      const savedQuestion = await newQuestion.save();
+      return { id: savedQuestion._id };
     } catch (error) {
       await this.helperService.catchValidationError(error);
     }
@@ -51,7 +52,6 @@ export class QuestionService {
         { _id: questionId },
         { $inc: { vote: voteType == 1 ? -1 : 1 }}
       );
-      console.log('FindByOne', updateOne);
       // @Todo
       // Create a record in the votes collection to indicate that a user has voted
       if (!updateOne) {

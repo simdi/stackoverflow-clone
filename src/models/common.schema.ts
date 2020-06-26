@@ -7,7 +7,7 @@ export interface IMeta extends mongoose.Document {
 };
 
 export const MetaSchema = new mongoose.Schema({
-  active: { type: Boolean, required: true, default: false },
+  active: { type: Boolean, required: true, default: true },
   updated: { type: Date, required: true, default: new Date().toISOString() },
   created: { type: Date, required: true, default: new Date().toISOString() },
 }, { _id: false });
