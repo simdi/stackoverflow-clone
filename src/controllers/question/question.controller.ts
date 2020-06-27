@@ -2,11 +2,12 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth }
 import { Controller, HttpCode, Post, Body, Request, Param, Get, UseGuards, HttpStatus, Put, Query, Patch } from '@nestjs/common';
 import { QuestionService } from '../../services/question/question.service';
 import { IQuestion } from '../../models/question.schema';
-import { QuestionDTO } from '../../dto/question.dto';
+import { QuestionDTO, AnswerQuestionDTO } from '../../dto/question.dto';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { AuthGuard } from '../../shared/guards/authorization.guard';
 import { CreatedDTO } from '../../dto/responses/created.dto';
 import { ErrorDTO } from '../../dto/responses/error.dto';
+import { QuestionVoteDTO } from '../../dto/responses/updated.dto';
 
 @ApiBearerAuth('access_token')
 @ApiTags('Questions')
@@ -52,13 +53,13 @@ export class QuestionController {
   }
   
   @Patch(':questionId/vote/:voteType')
-  @ApiOperation({ summary: 'Get a single Question' })
+  @ApiOperation({ summary: 'Vote for a Question' })
   @ApiParam({ name: 'questionId', type: String })
   @ApiParam({ name: 'voteType', example: 1, type: Number })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The found record',
-    type: QuestionDTO,
+    type: QuestionVoteDTO,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -71,9 +72,33 @@ export class QuestionController {
     type: ErrorDTO
   })
   @UseGuards(JwtAuthGuard, AuthGuard)
-  async voteById(@Param() param, @Request() req): Promise<{ success: boolean }> {
+  async voteById(@Param() param, @Request() req): Promise<QuestionVoteDTO> {
     const { user } = req;
     return await this.questionService.voteById(param, user);
+  }
+  
+  @Post(':questionId/answer')
+  @ApiOperation({ summary: 'Submit answer to a Question' })
+  @ApiParam({ name: 'questionId', type: String })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The created response',
+    type: CreatedDTO,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Bad Request',
+    type: ErrorDTO
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Question Not Found',
+    type: ErrorDTO
+  })
+  @UseGuards(JwtAuthGuard, AuthGuard)
+  async answerQuestionById(@Body() answer: AnswerQuestionDTO, @Param() param, @Request() req): Promise<CreatedDTO> {
+    const { user } = req;
+    return await this.questionService.answerQuestionById(param, answer, user);
   }
 
   @Post()

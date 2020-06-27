@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import * as paginate from 'mongoose-paginate';
+import * as paginate from 'mongoose-paginate-v2';
 import { v4 as uuid } from 'uuid';
 import { MetaSchema, IMeta } from './common.schema';
 import { HelperService } from '../shared/helpers/helper';

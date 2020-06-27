@@ -1,11 +1,12 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { IQuestion } from '../../models/question.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { IQuestion } from '../../models/question.schema';
 import { QuestionDTO } from '../../dto/question.dto';
 import { HelperService } from '../../shared/helpers/helper';
 import { CreatedDTO } from '../../dto/responses/created.dto';
 import { IVote } from '../../models/vote.schema';
+import { QuestionVoteDTO } from '../../dto/responses/updated.dto';
 
 @Injectable()
 export class QuestionService {
@@ -28,6 +29,13 @@ export class QuestionService {
 
   async findAll(query: { page: string, limit: string }): Promise<any> {
     return await this.questionModel.paginate({}, {
+      populate: [{
+        path: 'userId',
+        model: 'User',
+      },{
+        path: 'answers.userId',
+        model: 'User'           
+      }],
       page: parseInt(query.page),
       limit: parseInt(query.limit),
       sort: { 'meta.created': 'desc', 'meta.updated': 'desc' }
@@ -36,7 +44,7 @@ export class QuestionService {
 
   async findById(id: string): Promise<IQuestion> {
     try {
-      const findById = await this.questionModel.findById(id);
+      const findById = await this.questionModel.findById(id).populate('userId').populate('answers.userId');
       if (!findById) {
         throw new HttpException('Invalid question id', HttpStatus.BAD_REQUEST);
       }
@@ -46,7 +54,7 @@ export class QuestionService {
     }
   }
   
-  async voteById(param: { questionId: string, voteType: string }, user): Promise<{ success: boolean}> {
+  async voteById(param: { questionId: string, voteType: string }, user): Promise<QuestionVoteDTO> {
     const { questionId, voteType } = param;
     const { userId } = user;
     const vote = (parseInt(voteType) === 1) ? -1 : 1;
@@ -103,6 +111,27 @@ export class QuestionService {
         } else {
           throw new HttpException('There was a problem updating vote', HttpStatus.BAD_REQUEST);
         }
+      }
+    } catch (error) {
+      await this.helperService.catchValidationError(error);
+    }
+  }
+
+  async answerQuestionById(param: { questionId: string }, answer: { body: string }, user: any): Promise<CreatedDTO> {
+    const { questionId } = param;
+    const { userId } = user;
+    const { body } = answer;
+
+    try {
+      // Get question by Id
+      const createAnswerByQuestionId = await this.questionModel.findByIdAndUpdate(questionId, {
+        $push: { answers: { userId, body } }
+      });
+
+      if (createAnswerByQuestionId) {
+        return { id: createAnswerByQuestionId._id };
+      } else {
+        throw new HttpException('Invalid question id', HttpStatus.BAD_REQUEST);
       }
     } catch (error) {
       await this.helperService.catchValidationError(error);

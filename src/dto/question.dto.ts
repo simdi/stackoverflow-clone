@@ -12,9 +12,11 @@ export class QuestionDTO {
   })
   @IsString()
   body: string;
+};
+export class AnswerQuestionDTO {
   @ApiProperty({
-    type: [String],
+    type: String,
   })
   @IsString()
-  tags: string[];
+  body: string;
 };
