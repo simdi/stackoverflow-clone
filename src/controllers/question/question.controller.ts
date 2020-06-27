@@ -8,6 +8,7 @@ import { AuthGuard } from '../../shared/guards/authorization.guard';
 import { CreatedDTO } from '../../dto/responses/created.dto';
 import { ErrorDTO } from '../../dto/responses/error.dto';
 import { QuestionVoteDTO } from '../../dto/responses/updated.dto';
+import { FindDTO } from '../../dto/responses/find.dto';
 
 @ApiBearerAuth('access_token')
 @ApiTags('Questions')
@@ -22,11 +23,26 @@ export class QuestionController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The found records',
-    type: [QuestionDTO],
+    type: FindDTO,
   })
   @UseGuards(JwtAuthGuard, AuthGuard)
-  async findAll(@Query() query): Promise<IQuestion[]> {
+  async findAll(@Query() query): Promise<FindDTO> {
     return await this.questionService.findAll(query);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search Questions' })
+  @ApiQuery({ name: 'text', required: true, example: 'search text' })
+  @ApiQuery({ name: 'page', required: true, example: 1 })
+  @ApiQuery({ name: 'limit', required: true, example: 10 })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The found records',
+    type: FindDTO,
+  })
+  @UseGuards(JwtAuthGuard, AuthGuard)
+  async searchAll(@Query() query): Promise<FindDTO> {
+    return await this.questionService.searchAll(query);
   }
 
   @Get(':questionId')

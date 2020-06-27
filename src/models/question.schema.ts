@@ -14,7 +14,6 @@ export interface IQuestion extends mongoose.Document {
   uuid: string;
   body: string;
   userId: string;
-  views: number;
   vote: number;
   answers: string[];
   meta: IMeta;
@@ -25,7 +24,6 @@ export const QuestionSchema = new Schema({
   uuid: { type: String },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   body: { type: String, required: true, trim: true },
-  views: { type: Number, default: 0 },
   vote: { type: Number, default: 0 },
   answers: {
     type: [{

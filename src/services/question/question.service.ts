@@ -7,6 +7,7 @@ import { HelperService } from '../../shared/helpers/helper';
 import { CreatedDTO } from '../../dto/responses/created.dto';
 import { IVote } from '../../models/vote.schema';
 import { QuestionVoteDTO } from '../../dto/responses/updated.dto';
+import { FindDTO } from '../../dto/responses/find.dto';
 
 @Injectable()
 export class QuestionService {
@@ -27,7 +28,8 @@ export class QuestionService {
     }
   }
 
-  async findAll(query: { page: string, limit: string }): Promise<any> {
+  async findAll(query: { page: string, limit: string }): Promise<FindDTO> {
+    const { page, limit } = query;
     return await this.questionModel.paginate({}, {
       populate: [{
         path: 'userId',
@@ -36,8 +38,30 @@ export class QuestionService {
         path: 'answers.userId',
         model: 'User'           
       }],
-      page: parseInt(query.page),
-      limit: parseInt(query.limit),
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sort: { 'meta.created': 'desc', 'meta.updated': 'desc' }
+    });
+  }
+  
+  async searchAll(query: { text: string, page: string, limit: string }): Promise<FindDTO> {
+    const { text, page, limit } = query;
+    return await this.questionModel.paginate({
+      $or: [
+        { title: { $regex: text, $options: 'i' } },
+        { body: { $regex: text, $options: 'i' } },
+        { 'answers.body': { $regex: text, $options: 'i' } },
+      ]
+    }, {
+      populate: [{
+        path: 'userId',
+        model: 'User',
+      },{
+        path: 'answers.userId',
+        model: 'User'           
+      }],
+      page: parseInt(page),
+      limit: parseInt(limit),
       sort: { 'meta.created': 'desc', 'meta.updated': 'desc' }
     });
   }
