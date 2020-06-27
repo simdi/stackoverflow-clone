@@ -6,6 +6,7 @@ import { UserDTO } from '../../dto/user.dto';
 import { HelperService } from '../../shared/helpers/helper';
 import { AuthService } from '../auth/auth.service';
 import { CreatedDTO, LoginResponseDTO } from 'src/dto/responses/created.dto';
+import { FindDTO } from 'src/dto/responses/find.dto';
 
 export enum USER_TYPE {
   regular = 'REGULAR',
@@ -44,9 +45,24 @@ export class UserService {
   }
 
   async findAll(query: { page: string, limit: string }): Promise<any> {
+    const { page, limit } = query;
     return await this.userModel.paginate({}, {
-      page: parseInt(query.page),
-      limit: parseInt(query.limit),
+      page: parseInt(page),
+      limit: parseInt(limit),
+      sort: { 'meta.created': 'desc', 'meta.updated': 'desc' }
+    });
+  }
+
+  async searchAll(query: { name: string, page: string, limit: string }): Promise<FindDTO> {
+    const { name, page, limit } = query;
+    return await this.userModel.paginate({
+      $or: [
+        { firstName: { $regex: name, $options: 'i' } },
+        { lastName: { $regex: name, $options: 'i' } },
+      ]
+    }, {
+      page: parseInt(page),
+      limit: parseInt(limit),
       sort: { 'meta.created': 'desc', 'meta.updated': 'desc' }
     });
   }

@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { AuthGuard } from '../../shared/guards/authorization.guard';
 import { CreatedDTO, LoginResponseDTO } from '../../dto/responses/created.dto';
 import { ErrorDTO } from '../../dto/responses/error.dto';
+import { FindDTO } from '../../dto/responses/find.dto';
 
 @ApiBearerAuth('access_token')
 @ApiTags('Users')
@@ -26,6 +27,21 @@ export class UserController {
   @UseGuards(JwtAuthGuard, AuthGuard)
   async findAll(@Query() query): Promise<IUser[]> {
     return await this.userService.findAll(query);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search Users' })
+  @ApiQuery({ name: 'name', required: true, example: 'john doe' })
+  @ApiQuery({ name: 'page', required: true, example: 1 })
+  @ApiQuery({ name: 'limit', required: true, example: 10 })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The found records',
+    type: FindDTO,
+  })
+  @UseGuards(JwtAuthGuard, AuthGuard)
+  async searchAll(@Query() query): Promise<FindDTO> {
+    return await this.userService.searchAll(query);
   }
 
   @Get(':userId')
