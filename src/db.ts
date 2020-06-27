@@ -12,5 +12,10 @@ export const jwtModuleOptions = {
 };
 
 export default (async() => {
-  return await MongooseModule.forRoot(url, { useNewUrlParser: true, useUnifiedTopology: true })
+  return await MongooseModule.forRoot(url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false
+  })
 })();

@@ -1,5 +1,5 @@
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
-import { Controller, HttpCode, Post, Body, Request, Param, Get, UseGuards, HttpStatus, Put, Query } from '@nestjs/common';
+import { Controller, HttpCode, Post, Body, Request, Param, Get, UseGuards, HttpStatus, Put, Query, Patch } from '@nestjs/common';
 import { QuestionService } from '../../services/question/question.service';
 import { IQuestion } from '../../models/question.schema';
 import { QuestionDTO } from '../../dto/question.dto';
@@ -51,7 +51,7 @@ export class QuestionController {
     return await this.questionService.findById(id);
   }
   
-  @Put(':questionId/vote/:voteType')
+  @Patch(':questionId/vote/:voteType')
   @ApiOperation({ summary: 'Get a single Question' })
   @ApiParam({ name: 'questionId', type: String })
   @ApiParam({ name: 'voteType', example: 1, type: Number })
@@ -71,8 +71,9 @@ export class QuestionController {
     type: ErrorDTO
   })
   @UseGuards(JwtAuthGuard, AuthGuard)
-  async voteById(@Param() param): Promise<IQuestion> {
-    return await this.questionService.voteById(param);
+  async voteById(@Param() param, @Request() req): Promise<{ success: boolean }> {
+    const { user } = req;
+    return await this.questionService.voteById(param, user);
   }
 
   @Post()
@@ -91,7 +92,6 @@ export class QuestionController {
   @UseGuards(JwtAuthGuard, AuthGuard)
   async create(@Body() question: QuestionDTO, @Request() req): Promise<CreatedDTO> {
     const { user } = req;
-    console.log('Q user', user);
     return await this.questionService.create(question, user);
   }
 }

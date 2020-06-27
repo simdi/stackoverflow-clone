@@ -5,11 +5,13 @@ import { Model } from 'mongoose';
 import { QuestionDTO } from '../../dto/question.dto';
 import { HelperService } from '../../shared/helpers/helper';
 import { CreatedDTO } from '../../dto/responses/created.dto';
+import { IVote } from '../../models/vote.schema';
 
 @Injectable()
 export class QuestionService {
   constructor(
     @InjectModel('Question') private readonly questionModel: Model<IQuestion>,
+    @InjectModel('Vote') private readonly voteModel: Model<IVote>,
     private readonly helperService: HelperService,
   ) {}
 
@@ -44,22 +46,67 @@ export class QuestionService {
     }
   }
   
-  async voteById(param: { questionId: string, voteType: number }): Promise<any> {
+  async voteById(param: { questionId: string, voteType: string }, user): Promise<{ success: boolean}> {
     const { questionId, voteType } = param;
+    const { userId } = user;
+    const vote = (parseInt(voteType) === 1) ? -1 : 1;
 
     try {
-      const updateOne = await this.questionModel.updateOne(
-        { _id: questionId },
-        { $inc: { vote: voteType == 1 ? -1 : 1 }}
-      );
-      // @Todo
-      // Create a record in the votes collection to indicate that a user has voted
-      if (!updateOne) {
-        throw new HttpException('Invalid question id', HttpStatus.BAD_REQUEST);
+      // Get vote to check if it has been created before.
+      const findVoteByQuestionId = await this.voteModel.findOne({ questionId }).select({ votes: 1, questionId: 1 });
+
+      if (findVoteByQuestionId) {
+        // Get vote by user and check if the user has voted before.
+        const findVoteByUserId = await this.voteModel.findOne({ questionId, "users.userId": userId }).select({ users: { $elemMatch: { userId } }});
+
+        if (findVoteByUserId) {
+          // Check the type of vote the user has
+          if (findVoteByUserId.users.length > 0 && findVoteByUserId.users[0].vote !== vote) {
+            const updateUserVote = this.voteModel.updateOne({
+              questionId, "users.userId": userId },
+              {
+                $inc: { votes: vote * 2 },
+                $set: { "users.$.vote": vote }
+              }
+            );
+            const updateQuestion = this.questionModel.findByIdAndUpdate(questionId, { $inc: { vote: vote * 2 }});
+            const allPromise = await Promise.all([updateUserVote, updateQuestion]);
+
+            if (allPromise[0] && allPromise[1]) {
+              return { success: true };
+            } else {
+              throw new HttpException('There was a problem updating vote', HttpStatus.BAD_REQUEST);
+            }
+          }
+          // The user has the same vote, so don't do anything.
+          return { success: true };
+        } else {
+          // User hasn't voted before.
+          const updateUserVote = this.voteModel.updateOne({ questionId }, { $inc: { votes: vote }, $push: { users: { userId, vote } } });
+          const updateQuestion = this.questionModel.findByIdAndUpdate(questionId, { $inc: { vote }});
+          const allPromise = await Promise.all([updateUserVote, updateQuestion]);
+
+          if (allPromise[0] && allPromise[1]) {
+            return { success: true };
+          } else {
+            throw new HttpException('There was a problem updating vote', HttpStatus.BAD_REQUEST);
+          }
+        }
+      } else {
+        // Create vote by question
+        const updateQuestion = this.questionModel.findByIdAndUpdate(questionId, { $inc: { vote }});
+        const voteObj = { questionId, users: [{ userId: userId, vote }], votes: vote };
+        const newVote = new this.voteModel(voteObj);
+        const allPromise = await Promise.all([newVote.save(), updateQuestion]);
+        if (allPromise[0] && allPromise[1]) {
+          return { success: true };
+        } else {
+          throw new HttpException('There was a problem updating vote', HttpStatus.BAD_REQUEST);
+        }
       }
-      return { success: true };
     } catch (error) {
       await this.helperService.catchValidationError(error);
     }
   }
+
 }
