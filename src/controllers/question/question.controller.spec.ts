@@ -109,7 +109,7 @@ describe('Question Controller', () => {
 
     describe('findAll', () => {
       it('should return a paginated docs of questions', async () => {
-        const spy = jest.spyOn(service, 'findAll').mockImplementation(async() => findAllResult);
+        const spy = await jest.spyOn(service, 'findAll').mockImplementation(async() => findAllResult);
   
         expect(await controller.findAll(query)).toBe(findAllResult);
         expect((await controller.findAll(query)).docs.length).toBe(findAllResult.docs.length);
@@ -123,7 +123,7 @@ describe('Question Controller', () => {
     
     describe('searchAll', () => {
       it('should return a paginated docs of searched question or answer', async () => {
-        const spy = jest.spyOn(service, 'searchAll').mockImplementation(async() => findAllResult);
+        const spy = await jest.spyOn(service, 'searchAll').mockImplementation(async() => findAllResult);
   
         expect(await controller.searchAll(searchQuery)).toBe(findAllResult);
         expect((await controller.searchAll(searchQuery)).docs.length).toBe(findAllResult.docs.length);
@@ -138,14 +138,14 @@ describe('Question Controller', () => {
     describe('findById', () => {
       it('should return a question', async () => {
         const questionId = '5ef76a682c2972c07c3693a7';
-        const spy = jest.spyOn(service, 'findById').mockImplementation(async() => result);
+        const spy = await jest.spyOn(service, 'findById').mockImplementation(async() => result);
   
         expect(await controller.findById(questionId)).toBe(result);
         expect(spy).toHaveBeenCalled();
         expect(spy).toBeCalledTimes(1);
       });
       it('should return 400 Bad Request', async () => {
-        const spy = jest.spyOn(service, 'findById').mockImplementation(async() => badRequest);
+        const spy = await jest.spyOn(service, 'findById').mockImplementation(async() => badRequest);
         expect(await controller.findById(undefined)).toBe(badRequest);
         expect(spy).toHaveBeenCalled();
         expect(spy).toBeCalledTimes(1);
@@ -154,14 +154,14 @@ describe('Question Controller', () => {
   
     describe('answerQuestionById', () => {
       it('should return a question', async () => {
-        const spy = jest.spyOn(service, 'answerQuestionById').mockImplementation(() => result);
+        const spy = await jest.spyOn(service, 'answerQuestionById').mockImplementation(async () => result);
   
         expect(await controller.answerQuestionById(payload, answer, req)).toBe(result);
         expect(spy).toHaveBeenCalled();
         expect(spy).toBeCalledTimes(1);
       });
       it('should return 400 Bad Request', async () => {
-        const spy = jest.spyOn(service, 'answerQuestionById').mockImplementation(() => badRequest);
+        const spy = await jest.spyOn(service, 'answerQuestionById').mockImplementation(async () => badRequest);
 
         expect(await controller.answerQuestionById(payload, answer, req)).toBe(badRequest);
         expect(spy).toHaveBeenCalled();
@@ -171,14 +171,14 @@ describe('Question Controller', () => {
     
     describe('create', () => {
       it('should return a question', async () => {
-        const spy = jest.spyOn(service, 'create').mockImplementation(() => result);
+        const spy = await jest.spyOn(service, 'create').mockImplementation(() => result);
   
         expect(await controller.create(payload, req)).toBe(result);
         expect(spy).toHaveBeenCalled();
         expect(spy).toBeCalledTimes(1);
       });
       it('should return 400 Bad Request', async () => {
-        const spy = jest.spyOn(service, 'create').mockImplementation(() => badRequest);
+        const spy = await jest.spyOn(service, 'create').mockImplementation(() => badRequest);
 
         expect(await controller.create(payload, req)).toBe(badRequest);
         expect(spy).toHaveBeenCalled();

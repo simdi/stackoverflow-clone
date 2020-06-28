@@ -62,7 +62,7 @@ describe('User Controller', () => {
 
     describe('findAll', () => {
       it('should return a paginated docs of users', async () => {
-        const spy = jest.spyOn(service, 'findAll').mockImplementation(async() => findAllResult);
+        const spy = await jest.spyOn(service, 'findAll').mockImplementation(async() => findAllResult);
   
         expect(await controller.findAll(query)).toBe(findAllResult);
         expect((await controller.findAll(query)).docs.length).toBe(findAllResult.docs.length);
@@ -74,7 +74,7 @@ describe('User Controller', () => {
     
     describe('searchAll', () => {
       it('should return a paginated docs of searched user or answer', async () => {
-        const spy = jest.spyOn(service, 'searchAll').mockImplementation(async() => findAllResult);
+        const spy = await jest.spyOn(service, 'searchAll').mockImplementation(async() => findAllResult);
   
         expect(await controller.searchAll(searchQuery)).toBe(findAllResult);
         expect((await controller.searchAll(searchQuery)).docs.length).toBe(findAllResult.docs.length);
@@ -87,14 +87,14 @@ describe('User Controller', () => {
     describe('findById', () => {
       it('should return a user', async () => {
         const userId = '5ef739087eaf94b2eacc1f29';
-        const spy = jest.spyOn(service, 'findById').mockImplementation(async() => result);
+        const spy = await jest.spyOn(service, 'findById').mockImplementation(async() => result);
   
         expect(await controller.findById(userId)).toBe(result);
         expect(spy).toHaveBeenCalled();
         expect(spy).toBeCalledTimes(1);
       });
       it('should return 400 Bad Request', async () => {
-        const spy = jest.spyOn(service, 'findById').mockImplementation(async() => badRequest);
+        const spy = await jest.spyOn(service, 'findById').mockImplementation(async() => badRequest);
         expect(await controller.findById(undefined)).toBe(badRequest);
         expect(spy).toHaveBeenCalled();
         expect(spy).toBeCalledTimes(1);
@@ -103,14 +103,14 @@ describe('User Controller', () => {
     
     describe('create', () => {
       it('should return a user', async () => {
-        const spy = jest.spyOn(service, 'create').mockImplementation(() => result);
+        const spy = await jest.spyOn(service, 'create').mockImplementation(async () => result);
   
         expect(await controller.create(payload)).toBe(result);
         expect(spy).toHaveBeenCalled();
         expect(spy).toBeCalledTimes(1);
       });
       it('should return 400 Bad Request', async () => {
-        const spy = jest.spyOn(service, 'create').mockImplementation(() => badRequest);
+        const spy = await jest.spyOn(service, 'create').mockImplementation(async () => badRequest);
 
         expect(await controller.create(payload)).toBe(badRequest);
         expect(spy).toHaveBeenCalled();
