@@ -32,6 +32,9 @@ describe('AppController (e2e)', () => {
       title: "Calculate distance between two latitude-longitude points? (Haversine formula)",
       body: "How do I calculate the distance between two points specified by latitude and longitude? \n For clarification, I'd like the distance in kilometers; the points use the WGS84 system and I'd like to understand the relative accuracies of the approaches available."
     };
+    const answerPayload = { body: "This link might be helpful to you, as it details the use of the Haversine formula to calculate the distance.\n```Excerpt: This script [in Javascript] calculates great-circle distances between the two points – that is, the shortest distance over the earth’s surface – using the ‘Haversine’ formula.```" };
+    const query = { page: 1, limit: 10 };
+    const searchQuery = { ...query, text: 'unknown' };
     const loginPayload = {
       email: "email@yahoo.com",
       password: "string"
@@ -85,204 +88,341 @@ describe('AppController (e2e)', () => {
       });
     });
 
-    // describe('Questions', () => {
-    //   it('/ (GET) Questions', () => {
-    //     return request(app.getHttpServer())
-    //       .get(questionsEndpoint)
-    //       .expect(HttpStatus.OK)
-    //       .expect([]);
-    //   });
+    describe('Questions', () => {
+      it('/ (GET) Questions', async(done) => {
+        return request(app.getHttpServer())
+          .get(questionsEndpoint)
+          .set('Authorization', 'Bearer ' + accessToken)
+          .expect(HttpStatus.OK)
+          .expect(res => {
+            expect(res.status).toEqual(HttpStatus.OK);
+            expect(res.body).toHaveProperty('docs');
+            expect(res.body.docs).toEqual([]);
+            expect(res.body).toHaveProperty('totalDocs');
+            expect(res.body.totalDocs).toBe(0);
+            expect(res.body).toHaveProperty('limit');
+            expect(res.body.limit).toBe(0);
+            expect(res.body).toHaveProperty('totalPages');
+            expect(res.body.totalPages).toBeNull();
+            done();
+          });
+      });
   
-    //   describe('/ (POST) Questions', () => {
-    //     it('should be successful', async (done) => {
-    //       return request(app.getHttpServer())
-    //         .post(questionsEndpoint)
-    //         .send(questionPayload)
-    //         .expect(HttpStatus.CREATED)
-    //         .expect((res) => {
-    //           // Get the saved question data after successfully saving.
-    //           // questionResponseBody = res.body;
+      describe('/ (POST) Questions', () => {
+        it('should be successful', async (done) => {
+          return request(app.getHttpServer())
+            .post(questionsEndpoint)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .send(questionPayload)
+            .expect(HttpStatus.CREATED)
+            .expect((res) => {
+              // Get the saved question data after successfully saving.
+              questionResponseBody = res.body;
 
-    //           expect(res.status).toEqual(HttpStatus.CREATED);
-    //           expect(res.body).toHaveProperty('staticId');
-    //           done();
-    //         });
-    //     });
+              expect(res.body).toHaveProperty('id');
+              done();
+            });
+        });
 
-    //     it('should return 400 bad request', async (done) => {
-    //       // Alter payload;
-    //       const alteredPayload = { ...questionPayload, name: "" };
-    //       return request(app.getHttpServer())
-    //         .post(questionsEndpoint)
-    //         .send(alteredPayload)
-    //         .expect(HttpStatus.BAD_REQUEST)
-    //         .expect((res) => {
-    //           expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
-    //           expect(res.body).toHaveProperty('statusCode');
-    //           expect(res.body).toHaveProperty('message');
-    //           done();
-    //         });
-    //     });
-    //   });
+        it('should return 400 bad request', async (done) => {
+          // Alter payload;
+          const alteredPayload = { ...questionPayload, title: "" };
+          return request(app.getHttpServer())
+            .post(questionsEndpoint)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .send(alteredPayload)
+            .expect(HttpStatus.BAD_REQUEST)
+            .expect((res) => {
+              expect(res.body).toHaveProperty('status');
+              expect(res.body).toHaveProperty('message');
+              expect(res.body).toHaveProperty('timestamp');
+              expect(res.body).toHaveProperty('path');
+              expect(res.body).toHaveProperty('method');
+              done();
+            });
+        });
+      });
 
-    //   describe('/ (GET) Questions/:questionId', () => {
-    //     it('should be successful', async (done) => {
-    //       return request(app.getHttpServer())
-    //         .get(`${questionsEndpoint}/${questionResponseBody.staticId}`)
-    //         .expect(HttpStatus.OK)
-    //         .expect((res) => {
-    //           expect(res.status).toEqual(HttpStatus.OK);
-    //           expect(res.body).toHaveProperty('_id');
-    //           expect(res.body).toHaveProperty('name');
-    //           expect(res.body).toHaveProperty('address');
-    //           expect(res.body).toHaveProperty('email');
-    //           expect(res.body).toHaveProperty('description');
-    //           expect(res.body._id).toEqual(questionResponseBody.staticId);
-    //           expect(res.body.name).toEqual(questionPayload.name);
-    //           expect(res.body.address).toEqual(questionPayload.address);
-    //           expect(res.body.email).toEqual(questionPayload.email);
-    //           expect(res.body.description).toEqual(questionPayload.description);
-    //           done();
-    //         });
-    //     });
-    //     it('should not be successful', async (done) => {
-    //       return request(app.getHttpServer())
-    //         .get(`${questionsEndpoint}/1`)
-    //         .expect(HttpStatus.BAD_REQUEST)
-    //         .expect((res) => {
-    //           expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
-    //           expect(res.body).toHaveProperty('statusCode');
-    //           expect(res.body).toHaveProperty('message');
-    //           done();
-    //         });
-    //     });
-    //   });
+      describe('/ (GET) Questions/:questionId', () => {
+        it('should be successful', async (done) => {
+          return request(app.getHttpServer())
+            .get(`${questionsEndpoint}/${questionResponseBody.id}`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .expect(HttpStatus.OK)
+            .expect((res) => {
+              expect(res.status).toEqual(HttpStatus.OK);
+              expect(res.body).toHaveProperty('_id');
+              expect(res.body).toHaveProperty('title');
+              expect(res.body).toHaveProperty('vote');
+              expect(res.body).toHaveProperty('body');
+              expect(res.body).toHaveProperty('answers');
+              expect(res.body._id).toEqual(questionResponseBody.id);
+              expect(res.body.title).toEqual(questionPayload.title);
+              expect(res.body.vote).toEqual(0);
+              expect(res.body.answers).toEqual([]);
+              expect(res.body.body).toEqual(questionPayload.body);
+              done();
+            });
+        });
 
-    // });
+        it('should not be successful', async (done) => {
+          return request(app.getHttpServer())
+            .get(`${questionsEndpoint}/1`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .expect(HttpStatus.BAD_REQUEST)
+            .expect((res) => {
+              expect(res.body).toHaveProperty('status');
+              expect(res.body).toHaveProperty('message');
+              expect(res.body).toHaveProperty('timestamp');
+              expect(res.body).toHaveProperty('path');
+              expect(res.body).toHaveProperty('method');
+              done();
+            });
+        });
+      });
 
-    // describe('Users', () => {
-    //   describe('/ (GET) Users', () => {
-    //     it('should be successful', () => {
-    //       return request(app.getHttpServer())
-    //         .get(userEndpoint)
-    //         .expect(HttpStatus.OK)
-    //         .expect([]);
-    //     });
-    //   });
-  
-    //   test.concurrent('Post first', async() => {
-    //     describe('/ (POST) Users', () => {
-    //       it('should be successful', async (done) => {
-    //         const alteredPayload = { ...userPayload, questionId: questionResponseBody.staticId };
-    //         return request(app.getHttpServer())
-    //           .post(userEndpoint)
-    //           .send(alteredPayload)
-    //           .expect(HttpStatus.CREATED)
-    //           .expect((res) => {
-    //             userResponseBody = res.body;
+      describe('/ (GET) Questions/search', () => {
+        it('should be successful', async (done) => {
+          return request(app.getHttpServer())
+            .get(`${questionsEndpoint}/search?limit=10&page=1&text=distance`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .expect(HttpStatus.OK)
+            .expect((res) => {
+              expect(res.body).toHaveProperty('docs');
+              expect(res.body.docs.length).toEqual(1);
+              expect(res.body).toHaveProperty('totalDocs');
+              expect(res.body.totalDocs).toBe(1);
+              expect(res.body).toHaveProperty('limit');
+              expect(res.body.limit).toBe(10);
+              expect(res.body).toHaveProperty('page');
+              expect(res.body.page).toBe(1);
+              expect(res.body).toHaveProperty('pagingCounter');
+              expect(res.body.pagingCounter).toBe(1);
+              expect(res.body).toHaveProperty('totalPages');
+              expect(res.body.totalPages).toBe(1);
+              expect(res.body.docs[0]).toHaveProperty('_id');
+              expect(res.body.docs[0]).toHaveProperty('title');
+              expect(res.body.docs[0]).toHaveProperty('vote');
+              expect(res.body.docs[0]).toHaveProperty('body');
+              expect(res.body.docs[0]).toHaveProperty('answers');
+              expect(res.body.docs[0]._id).toEqual(questionResponseBody.id);
+              expect(res.body.docs[0].title).toEqual(questionPayload.title);
+              expect(res.body.docs[0].vote).toEqual(0);
+              expect(res.body.docs[0].answers).toEqual([]);
+              expect(res.body.docs[0].body).toEqual(questionPayload.body);
+              done();
+            });
+        });
 
-    //             expect(res.status).toEqual(HttpStatus.CREATED);
-    //             expect(res.body).toHaveProperty('staticId');
-    //             done();
-    //           });
-    //       });
-  
-    //       it('should return 400 bad request', async (done) => {
-    //         // Alter payload;
-    //         const alteredPayload = { ...userPayload, name: "" };
-    //         return request(app.getHttpServer())
-    //           .post(userEndpoint)
-    //           .send(alteredPayload)
-    //           .expect(HttpStatus.BAD_REQUEST)
-    //           .expect((res) => {
-    //             expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
-    //             expect(res.body).toHaveProperty('statusCode');
-    //             expect(res.body).toHaveProperty('message');
-    //             done();
-    //           });
-    //       });
-    //     });
-    //   });
+        it('should be successful with an empty array of docs', async (done) => {
+          return request(app.getHttpServer())
+            .get(`${questionsEndpoint}/search?limit=10&page=1&text=nothing`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .expect(HttpStatus.OK)
+            .expect((res) => {
+              expect(res.body).toHaveProperty('docs');
+              expect(res.body.docs).toEqual([]);
+              expect(res.body).toHaveProperty('totalDocs');
+              expect(res.body.totalDocs).toBe(0);
+              expect(res.body).toHaveProperty('limit');
+              expect(res.body.limit).toBe(10);
+              expect(res.body).toHaveProperty('totalPages');
+              expect(res.body.totalPages).toBe(1);
+              done();
+            });
+        });
+      });
+      
+      describe('/ (POST) Questions/{questionId}/answer', () => {
+        it('should be successful', async (done) => {
+          return request(app.getHttpServer())
+            .post(`${questionsEndpoint}/${questionResponseBody.id}/answer`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .send(answerPayload)
+            .expect(HttpStatus.CREATED)
+            .expect((res) => {
+              expect(res.body).toHaveProperty('id');
+              done();
+            });
+        });
 
-    //   test.concurrent('Get/:userId second', async () => {
-    //     describe('/ (GET) Users/:userId', () => {
-    //       it('should be successful', async (done) => {
-    //         return request(app.getHttpServer())
-    //           .get(`${userEndpoint}/${userResponseBody.staticId}`)
-    //           .expect(HttpStatus.OK)
-    //           .expect((res) => {
-    //             expect(res.status).toEqual(HttpStatus.OK);
-    //             expect(res.body).toHaveProperty('_id');
-    //             expect(res.body).toHaveProperty('name');
-    //             expect(res.body).toHaveProperty('type');
-    //             expect(res.body).toHaveProperty('period');
-    //             expect(res.body).toHaveProperty('year');
-    //             expect(res.body).toHaveProperty('assignee');
-    //             expect(res.body).toHaveProperty('deadline');
-    //             expect(res.body).toHaveProperty('submitted');
-    //             expect(res.body).toHaveProperty('url');
-    //             expect(res.body).toHaveProperty('questionId');
-    //             expect(res.body._id).toEqual(userResponseBody.staticId);
-    //             expect(res.body.name).toEqual(userPayload.name);
-    //             expect(res.body.type).toEqual(userPayload.type);
-    //             expect(res.body.period).toEqual(userPayload.period);
-    //             expect(res.body.year).toEqual(userPayload.year);
-    //             expect(res.body.assignee).toEqual(userPayload.assignee);
-    //             expect(res.body.deadline).toEqual(userPayload.deadline);
-    //             expect(res.body.submitted).toEqual(userPayload.submitted);
-    //             expect(res.body.url).toEqual(userPayload.url);
-    //             expect(res.body.questionId).toEqual(questionResponseBody.staticId);
-    //             done();
-    //           });
-    //       });
-    //       it('should not be successful', async (done) => {
-    //         return request(app.getHttpServer())
-    //           .get(`${userEndpoint}/1`)
-    //           .expect(HttpStatus.BAD_REQUEST)
-    //           .expect((res) => {
-    //             expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
-    //             expect(res.body).toHaveProperty('statusCode');
-    //             expect(res.body).toHaveProperty('message');
-    //             done();
-    //           });
-    //       });
-    //     });
+        it('confirm that the answer was successful ', async (done) => {
+          return request(app.getHttpServer())
+            .get(`${questionsEndpoint}/${questionResponseBody.id}`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .expect(HttpStatus.OK)
+            .expect((res) => {
+              expect(res.status).toEqual(HttpStatus.OK);
+              expect(res.body).toHaveProperty('_id');
+              expect(res.body).toHaveProperty('title');
+              expect(res.body).toHaveProperty('vote');
+              expect(res.body).toHaveProperty('body');
+              expect(res.body).toHaveProperty('answers');
+              expect(res.body.answers.length).toEqual(1);
+              expect(res.body._id).toEqual(questionResponseBody.id);
+              expect(res.body.title).toEqual(questionPayload.title);
+              expect(res.body.vote).toEqual(0);
+              expect(res.body.body).toEqual(questionPayload.body);
+              done();
+            });
+        });
+      });
+      
+      describe('/ (POST) Questions/{questionId}/vote/{voteType}', () => {
+        it('should be successful', async (done) => {
+          return request(app.getHttpServer())
+            .patch(`${questionsEndpoint}/${questionResponseBody.id}/vote/2`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .send(answerPayload)
+            .expect(HttpStatus.OK)
+            .expect((res) => {
+              expect(res.body).toHaveProperty('success');
+              expect(res.body.success).toBeTruthy();
+              done();
+            });
+        });
 
-    //     describe('/ (GET) Users?questionId=123456789&year=2020', () => {
-    //       it('should return one record', async (done) => {
-    //         return request(app.getHttpServer())
-    //             .get(`${userEndpoint}?questionId=${questionResponseBody.staticId}&year=2020`)
-    //             .expect(HttpStatus.OK)
-    //             .expect((res) => {
-    //               expect(res.status).toEqual(HttpStatus.OK);
-    //               expect(res.body.length).toEqual(1);
-    //               expect(res.body[0]).toHaveProperty('_id');
-    //               expect(res.body[0]).toHaveProperty('name');
-    //               expect(res.body[0]).toHaveProperty('type');
-    //               expect(res.body[0]).toHaveProperty('period');
-    //               expect(res.body[0]).toHaveProperty('year');
-    //               expect(res.body[0]).toHaveProperty('assignee');
-    //               expect(res.body[0]).toHaveProperty('deadline');
-    //               expect(res.body[0]).toHaveProperty('submitted');
-    //               expect(res.body[0]).toHaveProperty('url');
-    //               expect(res.body[0]).toHaveProperty('questionId');
-    //               expect(res.body[0]._id).toEqual(userResponseBody.staticId);
-    //               expect(res.body[0].name).toEqual(userPayload.name);
-    //               expect(res.body[0].type).toEqual(userPayload.type);
-    //               expect(res.body[0].period).toEqual(userPayload.period);
-    //               expect(res.body[0].year).toEqual(userPayload.year);
-    //               expect(res.body[0].assignee).toEqual(userPayload.assignee);
-    //               expect(res.body[0].deadline).toEqual(userPayload.deadline);
-    //               expect(res.body[0].submitted).toEqual(userPayload.submitted);
-    //               expect(res.body[0].url).toEqual(userPayload.url);
-    //               expect(res.body[0].questionId).toEqual(questionResponseBody.staticId);
-    //               done();
-    //             });
-    //       });
-    //     });
-        
-    //   });
-    // });
+        it('confirm that the answer was successful ', async (done) => {
+          return request(app.getHttpServer())
+            .get(`${questionsEndpoint}/${questionResponseBody.id}`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .expect(HttpStatus.OK)
+            .expect((res) => {
+              expect(res.status).toEqual(HttpStatus.OK);
+              expect(res.body).toHaveProperty('_id');
+              expect(res.body).toHaveProperty('title');
+              expect(res.body).toHaveProperty('vote');
+              expect(res.body).toHaveProperty('body');
+              expect(res.body).toHaveProperty('answers');
+              expect(res.body.answers.length).toEqual(1);
+              expect(res.body._id).toEqual(questionResponseBody.id);
+              expect(res.body.title).toEqual(questionPayload.title);
+              expect(res.body.vote).toEqual(1);
+              expect(res.body.body).toEqual(questionPayload.body);
+              done();
+            });
+        });
+      });
+
+    });
+
+    describe('Users', () => {
+      describe('/ (GET) Users', () => {
+        it('should be successful', async(done) => {
+          return request(app.getHttpServer())
+          .get(`${usersEndpoint}?limit=10&page=1`)
+          .set('Authorization', 'Bearer ' + accessToken)
+          .expect(HttpStatus.OK)
+          .expect(res => {
+            expect(res.body).toHaveProperty('docs');
+            expect(res.body.docs.length).toEqual(1);
+            expect(res.body).toHaveProperty('totalDocs');
+            expect(res.body.totalDocs).toBe(1);
+            expect(res.body).toHaveProperty('limit');
+            expect(res.body.limit).toBe(10);
+            expect(res.body).toHaveProperty('page');
+            expect(res.body.page).toBe(1);
+            expect(res.body).toHaveProperty('pagingCounter');
+            expect(res.body.pagingCounter).toBe(1);
+            expect(res.body).toHaveProperty('totalPages');
+            expect(res.body.totalPages).toBe(1);
+            done();
+          });
+        });
+      });
+      
+      describe('/ (POST) Users', () => {
+        it('should be successful', async (done) => {
+          const alternateUser = { ...userPayload, email: 'email2@yahoo.com' };
+          return request(app.getHttpServer())
+            .post(usersEndpoint)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .send(alternateUser)
+            .expect(HttpStatus.CREATED)
+            .expect((res) => {
+              userResponseBody = res.body;
+              expect(res.body).toHaveProperty('id');
+              done();
+            });
+        });
+
+        it('should return 400 bad request', async (done) => {
+          // Alter payload;
+          return request(app.getHttpServer())
+            .post(usersEndpoint)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .send(userPayload)
+            .expect(HttpStatus.BAD_REQUEST)
+            .expect((res) => {
+              expect(res.body).toHaveProperty('status');
+              expect(res.body).toHaveProperty('message');
+              expect(res.body).toHaveProperty('timestamp');
+              expect(res.body).toHaveProperty('path');
+              expect(res.body).toHaveProperty('method');
+              done();
+            });
+        });
+      });
+
+      describe('/ (GET) Users/:userId', () => {
+        it('should be successful', async (done) => {
+          return request(app.getHttpServer())
+            .get(`${usersEndpoint}/${userResponseBody.id}`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .expect(HttpStatus.OK)
+            .expect((res) => {
+              expect(res.body).toHaveProperty('_id');
+              expect(res.body).toHaveProperty('role');
+              expect(res.body).toHaveProperty('firstName');
+              expect(res.body).toHaveProperty('lastName');
+              expect(res.body).toHaveProperty('email');
+              expect(res.body._id).toEqual(userResponseBody.id);
+              expect(res.body.firstName).toEqual(userPayload.firstName);
+              expect(res.body.lastName).toEqual(userPayload.lastName);
+              done();
+            });
+        });
+        it('should not be successful', async (done) => {
+          return request(app.getHttpServer())
+            .get(`${usersEndpoint}/1`)
+            .set('Authorization', 'Bearer ' + accessToken)
+            .expect(HttpStatus.BAD_REQUEST)
+            .expect((res) => {
+              expect(res.body).toHaveProperty('status');
+              expect(res.body).toHaveProperty('message');
+              expect(res.body).toHaveProperty('timestamp');
+              expect(res.body).toHaveProperty('path');
+              expect(res.body).toHaveProperty('method');
+              done();
+            });
+        });
+      });
+
+      describe('/ (GET) Users/search', () => {
+        it('should return two records', async (done) => {
+          return request(app.getHttpServer())
+              .get(`${usersEndpoint}/search?page=1&limit=10&name=john`)
+              .set('Authorization', 'Bearer ' + accessToken)
+              .expect(HttpStatus.OK)
+              .expect((res) => {
+                expect(res.body).toHaveProperty('docs');
+                expect(res.body.docs.length).toEqual(2);
+                expect(res.body).toHaveProperty('totalDocs');
+                expect(res.body.totalDocs).toBe(2);
+                expect(res.body).toHaveProperty('limit');
+                expect(res.body.limit).toBe(10);
+                expect(res.body).toHaveProperty('page');
+                expect(res.body.page).toBe(1);
+                expect(res.body).toHaveProperty('pagingCounter');
+                expect(res.body.pagingCounter).toBe(1);
+                expect(res.body).toHaveProperty('totalPages');
+                expect(res.body.totalPages).toBe(1);
+                done();
+              });
+        });
+      });
+
+    });
     
   });
 });

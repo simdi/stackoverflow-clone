@@ -21,7 +21,7 @@ export interface IQuestion extends mongoose.Document {
 }
 
 export const QuestionSchema = new Schema({
-  title: { type: String, required: true, lowercase: true, trim: true },
+  title: { type: String, required: true, trim: true },
   uuid: { type: String },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   body: { type: String, required: true, trim: true },
