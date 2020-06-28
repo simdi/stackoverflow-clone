@@ -64,7 +64,7 @@ export class QuestionController {
     type: ErrorDTO
   })
   @UseGuards(JwtAuthGuard, AuthGuard)
-  async findById(@Param('questionId') id): Promise<IQuestion> {
+  async findById(@Param('questionId') id): Promise<IQuestion | ErrorDTO> {
     return await this.questionService.findById(id);
   }
   

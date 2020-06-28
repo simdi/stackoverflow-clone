@@ -12,6 +12,8 @@ export class HelperService {
       throw new HttpException(errMsg, HttpStatus.BAD_REQUEST);
     } else if (error.name === 'ValidationError') {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    } else if (error.name === 'CastError') {
+      throw new HttpException('Invalid Id supplied', HttpStatus.BAD_REQUEST);
     }
 
     throw new HttpException(error, error.status);

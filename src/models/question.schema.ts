@@ -15,8 +15,9 @@ export interface IQuestion extends mongoose.Document {
   body: string;
   userId: string;
   vote: number;
-  answers: string[];
-  meta: IMeta;
+  answers: [any];
+  user?: {};
+  meta?: IMeta;
 }
 
 export const QuestionSchema = new Schema({
@@ -32,7 +33,7 @@ export const QuestionSchema = new Schema({
     }]
   },
   meta: { type: MetaSchema, select: false }
-});
+}, { toJSON: { virtuals: true } });
 
 const addMeta = async(ctx) => ctx['meta'] = MetaSchema;
 const addUUID = async(ctx) => ctx['uuid'] = uuid();
@@ -40,6 +41,20 @@ const addUUID = async(ctx) => ctx['uuid'] = uuid();
 QuestionSchema.pre('save', async function() {
   await addMeta(this);
   await addUUID(this);
+});
+
+QuestionSchema.virtual('user', {
+  ref: 'User',
+  localField: 'userId',
+  foreignField: '_id',
+  justOne: true,
+});
+
+QuestionSchema.virtual('answers.user', {
+  ref: 'User',
+  localField: 'answers.userId',
+  foreignField: '_id',
+  justOne: true,
 });
 
 QuestionSchema.plugin(paginate);

@@ -8,6 +8,7 @@ import { CreatedDTO } from '../../dto/responses/created.dto';
 import { IVote } from '../../models/vote.schema';
 import { QuestionVoteDTO } from '../../dto/responses/updated.dto';
 import { FindDTO } from '../../dto/responses/find.dto';
+import { ErrorDTO } from 'src/dto/responses/error.dto';
 
 @Injectable()
 export class QuestionService {
@@ -31,13 +32,16 @@ export class QuestionService {
   async findAll(query: { page: string, limit: string }): Promise<FindDTO> {
     const { page, limit } = query;
     return await this.questionModel.paginate({}, {
-      populate: [{
-        path: 'userId',
-        model: 'User',
-      },{
-        path: 'answers.userId',
-        model: 'User'           
-      }],
+      populate: [
+        {
+          path: 'user',
+          model: 'User',
+        },
+        {
+          path: 'answers.user',
+          model: 'User'           
+        }
+      ],
       page: parseInt(page),
       limit: parseInt(limit),
       sort: { 'meta.created': 'desc', 'meta.updated': 'desc' }
@@ -66,7 +70,7 @@ export class QuestionService {
     });
   }
 
-  async findById(id: string): Promise<IQuestion> {
+  async findById(id: string): Promise<IQuestion | ErrorDTO> {
     try {
       const findById = await this.questionModel.findById(id).populate('userId').populate('answers.userId');
       if (!findById) {
