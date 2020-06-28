@@ -1,8 +1,9 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import config from './config';
 
+console.log('Env', config.get('env'))
 const { host, database, port } = config.get('mongo');
-const url = `mongodb://${host}:${port}/${database}`;
+export const url = `mongodb://${host}:${port}/${database}`;
 
 export const passportModuleOptions = { defaultStrategy: 'jwt' };
 
@@ -11,11 +12,13 @@ export const jwtModuleOptions = {
   signOptions: { expiresIn: config.get('jwt.expires') },
 };
 
+export const mongoDBOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+  useFindAndModify: false
+};
+
 export default (async() => {
-  return await MongooseModule.forRoot(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-  })
+  return await MongooseModule.forRoot(url, mongoDBOptions);
 })();

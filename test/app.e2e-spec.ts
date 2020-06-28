@@ -1,19 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, HttpStatus } from '@nestjs/common';
+import * as mongoose from 'mongoose';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
+import { url, mongoDBOptions } from '../src/db';
 
-// beforeAll(async () => {
-//   await mongoose.connect(process.env.MONGODB_CONNECTION_STRING_TEST, { useUnifiedTopology: true });
-//   await mongoose.connection.db.dropDatabase();
-// });
-
-// afterAll(async (done) => {
-//   await mongoose.disconnect(done);
-// });
+afterAll(async (done) => {
+  const connection = await mongoose.connect(url, mongoDBOptions);
+  await connection.connection.db.dropDatabase();
+  await mongoose.disconnect(done);
+});
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
+  const usersEndpoint = `/users`;
+  const questionsEndpoint = `/questions`;
+  const loginEndpoint = `/auth/login`;
+  const registerEndpoint = `/auth/register`;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -26,14 +29,23 @@ describe('AppController (e2e)', () => {
 
   describe('Integration test', () => {
     const questionPayload = {
-      "name": "MTN",
-      "address": "No 23 Mukola Adeogun, VI, Lagos, Nigeria",
-      "email": "mokola@yahoo.com",
-      "description": "MTN is a telecommunication question"
+      title: "Calculate distance between two latitude-longitude points? (Haversine formula)",
+      body: "How do I calculate the distance between two points specified by latitude and longitude? \n For clarification, I'd like the distance in kilometers; the points use the WGS84 system and I'd like to understand the relative accuracies of the approaches available."
     };
+    const loginPayload = {
+      email: "email@yahoo.com",
+      password: "string"
+    };
+    const userPayload = {
+      email: "email@yahoo.com",
+      password: "string",
+      firstName: "John",
+      lastName: "Doe"
+    };
+    let accessToken;
 
-    // let questionResponseBody;
-    // let userResponseBody;
+    let questionResponseBody;
+    let userResponseBody;
 
     describe('Home', () => {
       it('/ (GET)', () => {
@@ -44,10 +56,39 @@ describe('AppController (e2e)', () => {
       });
     });
 
+    describe('Auth', () => {
+      it('/register (POST)', async(done) => {
+        return request(app.getHttpServer())
+          .post(registerEndpoint)
+          .send(userPayload)
+          .expect(HttpStatus.CREATED)
+          .expect((res) => {
+            expect(res.status).toEqual(HttpStatus.CREATED);
+            expect(res.body).toHaveProperty('access_token');
+            done();
+          });
+      });
+
+      it('/login (POST)', async(done) => {
+        return request(app.getHttpServer())
+          .post(loginEndpoint)
+          .send(loginPayload)
+          .expect(HttpStatus.CREATED)
+          .expect((res) => {
+            // Get access_token from logging in.
+            accessToken = res.body.access_token;
+
+            expect(res.status).toEqual(HttpStatus.CREATED);
+            expect(res.body).toHaveProperty('access_token');
+            done();
+          });
+      });
+    });
+
     // describe('Questions', () => {
     //   it('/ (GET) Questions', () => {
     //     return request(app.getHttpServer())
-    //       .get(questionEndpoint)
+    //       .get(questionsEndpoint)
     //       .expect(HttpStatus.OK)
     //       .expect([]);
     //   });
@@ -55,12 +96,12 @@ describe('AppController (e2e)', () => {
     //   describe('/ (POST) Questions', () => {
     //     it('should be successful', async (done) => {
     //       return request(app.getHttpServer())
-    //         .post(questionEndpoint)
+    //         .post(questionsEndpoint)
     //         .send(questionPayload)
     //         .expect(HttpStatus.CREATED)
     //         .expect((res) => {
     //           // Get the saved question data after successfully saving.
-    //           questionResponseBody = res.body;
+    //           // questionResponseBody = res.body;
 
     //           expect(res.status).toEqual(HttpStatus.CREATED);
     //           expect(res.body).toHaveProperty('staticId');
@@ -72,7 +113,7 @@ describe('AppController (e2e)', () => {
     //       // Alter payload;
     //       const alteredPayload = { ...questionPayload, name: "" };
     //       return request(app.getHttpServer())
-    //         .post(questionEndpoint)
+    //         .post(questionsEndpoint)
     //         .send(alteredPayload)
     //         .expect(HttpStatus.BAD_REQUEST)
     //         .expect((res) => {
@@ -87,7 +128,7 @@ describe('AppController (e2e)', () => {
     //   describe('/ (GET) Questions/:questionId', () => {
     //     it('should be successful', async (done) => {
     //       return request(app.getHttpServer())
-    //         .get(`${questionEndpoint}/${questionResponseBody.staticId}`)
+    //         .get(`${questionsEndpoint}/${questionResponseBody.staticId}`)
     //         .expect(HttpStatus.OK)
     //         .expect((res) => {
     //           expect(res.status).toEqual(HttpStatus.OK);
@@ -106,7 +147,7 @@ describe('AppController (e2e)', () => {
     //     });
     //     it('should not be successful', async (done) => {
     //       return request(app.getHttpServer())
-    //         .get(`${questionEndpoint}/1`)
+    //         .get(`${questionsEndpoint}/1`)
     //         .expect(HttpStatus.BAD_REQUEST)
     //         .expect((res) => {
     //           expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
