@@ -33,8 +33,6 @@ describe('AppController (e2e)', () => {
       body: "How do I calculate the distance between two points specified by latitude and longitude? \n For clarification, I'd like the distance in kilometers; the points use the WGS84 system and I'd like to understand the relative accuracies of the approaches available."
     };
     const answerPayload = { body: "This link might be helpful to you, as it details the use of the Haversine formula to calculate the distance.\n```Excerpt: This script [in Javascript] calculates great-circle distances between the two points – that is, the shortest distance over the earth’s surface – using the ‘Haversine’ formula.```" };
-    const query = { page: 1, limit: 10 };
-    const searchQuery = { ...query, text: 'unknown' };
     const loginPayload = {
       email: "email@yahoo.com",
       password: "string"
