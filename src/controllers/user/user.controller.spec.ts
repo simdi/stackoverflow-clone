@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtService, JwtModule } from '@nestjs/jwt';
+import { getModelToken } from '@nestjs/mongoose';
 import { UserController } from './user.controller';
-import { AuthModule } from '../../modules/auth/auth.module';
-import { DatabaseModule } from '../../modules/database/database.module';
-import { IUser } from '../../models/user.schema';
+import { IUser, UserSchema } from '../../models/user.schema';
 import { ErrorDTO } from '../../dto/responses/error.dto';
 import { UserService } from '../../services/user/user.service';
+import { AuthService } from '../../services/auth/auth.service';
+import { HelperService } from '../../shared/helpers/helper';
 
 describe('User Controller', () => {
   let controller: UserController;
@@ -12,7 +14,20 @@ describe('User Controller', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AuthModule, DatabaseModule],
+      controllers: [UserController],
+      providers: [
+        UserService,
+        AuthService,
+        HelperService,
+        {
+          provide: JwtService,
+          useClass: JwtModule,
+        },
+        {
+          provide: getModelToken('User'),
+          useValue: UserSchema,
+        }
+      ],
     }).compile();
 
     service = module.get<UserService>(UserService);

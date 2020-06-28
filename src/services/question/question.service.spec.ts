@@ -1,18 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getModelToken } from '@nestjs/mongoose';
 import { QuestionService } from './question.service';
-import { QuestionModule } from '../../modules/question/question.module';
-import { DatabaseModule } from '../../modules/database/database.module';
 import { QuestionDTO } from '../../dto/question.dto';
-import { IQuestion } from '../../models/question.schema';
+import { IQuestion, QuestionSchema } from '../../models/question.schema';
 import { ErrorDTO } from '../../dto/responses/error.dto';
-import { CreatedDTO } from 'src/dto/responses/created.dto';
+import { CreatedDTO } from '../../dto/responses/created.dto';
+import { HelperService } from '../../shared/helpers/helper';
+import { VoteSchema } from '../../models/vote.schema';
 
 describe('QuestionService', () => {
   let service: QuestionService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [QuestionModule, DatabaseModule],
+      providers: [
+        QuestionService,
+        HelperService,
+        {
+          provide: getModelToken('Question'),
+          useValue: QuestionSchema
+        },
+        {
+          provide: getModelToken('Vote'),
+          useValue: VoteSchema
+        },
+      ]
     }).compile();
 
     service = module.get<QuestionService>(QuestionService);
