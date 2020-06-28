@@ -25,7 +25,7 @@ export class UserController {
     type: [UserDTO],
   })
   @UseGuards(JwtAuthGuard, AuthGuard)
-  async findAll(@Query() query): Promise<IUser[]> {
+  async findAll(@Query() query): Promise<FindDTO> {
     return await this.userService.findAll(query);
   }
 
