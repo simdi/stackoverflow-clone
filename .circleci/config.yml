@@ -1,0 +1,114 @@
+aliases:
+  # - &pkg_checksum
+  #   run: find . packages/* \( -name "package.json" \) -mindepth 1 -maxdepth 1  -exec shasum {} \; > checksums
+
+  # - &restore_pkg_cache
+  #   keys:
+  #     - v1-node-{{ checksum "checksums" }}
+  #     - v1-node-
+
+  # - &save_pkg_cache
+  #   name: Saving package cache
+  #   key: v1-node-{{ checksum "checksums" }}
+  #   paths:
+  #     - node_modules
+
+  - &yarn_install
+    name: Install packages
+    command: yarn install
+
+  # - &attach_workspace
+  #   attach_workspace:
+  #     at: ~/stackoverflow-clone
+
+  - &build_image
+    working_directory: ~/stackoverflow-clone
+    docker:
+      - image: circleci/node:10.16
+
+  # - &wait_for_mongo
+  #   run:
+  #     name: Wait for MongoDB
+  #     command: dockerize -wait tcp://localhost:27017 -timeout 1m
+
+  - &build_image_with_db
+    working_directory: ~/stackoverflow-clone
+    docker:
+      - image: circleci/node:10.16
+      - image: circleci/mongo:4.0.9-ram
+
+  - &dependencies
+    - checkout
+    # - *attach_workspace
+    # - restore_cache: *restore_pkg_cache
+    - run: *yarn_install
+    # - save_cache: *save_pkg_cache
+
+  - &prod_steps
+    - checkout
+    # - *attach_workspace
+    # - restore_cache: *restore_pkg_cache
+    - run:
+        name: Create production build files
+        command: |
+            sudo chmod +x ./.circleci/test.sh
+            ./.circleci/test.sh build Production
+    - run:
+        name: Running unit test
+        command: yarn test
+    - run:
+        name: Running e2e test
+        command: yarn test:e2e
+  
+    - persist_to_workspace:
+        root: .
+        paths:
+         - node_modules
+
+  - &test_steps
+    - checkout
+    # - *pkg_checksum
+    # - *attach_workspace
+    # - restore_cache: *restore_pkg_cache
+    - run:
+        name: Running unit test
+        command: yarn test
+    - run:
+        name: Running e2e test
+        command: yarn test:e2e
+
+  - &builder
+    - build
+
+  - &prod
+    - "Production"
+
+version: 2
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+
+      - test:
+          requires: *builder
+
+  # build_and_deploy:
+  #   jobs:
+  #     - build
+
+  #     - "Production":
+  #         requires: *builder
+
+jobs:
+  build:
+    <<: *build_image
+    steps: *dependencies
+
+  test:
+    <<: *build_image_with_db
+    steps: *test_steps
+
+  "Production":
+    <<: *build_image
+    steps: *prod_steps
