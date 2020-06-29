@@ -1,4 +1,7 @@
 # stackoverflow-clone.
+
+[![CircleCI](https://circleci.com/gh/simdi/stackoverflow-clone.svg?style=svg)](https://circleci.com/gh/simdi/stackoverflow-clone)
+
 The stackoverflow-clone is a javascript application built with Nestjs, and MongoDB.
 
 ## Prerequisites
@@ -21,7 +24,7 @@ $ git clone https://github.com/simdi/stackoverflow-clone.git
 $ cd stackoverflow-clone 
 $ touch .env
 $ echo MONGO_DB=stackoverflow-clone >> .env
-$ echo MONGO_HOST=127.0.0.1 >> .env
+$ echo MONGO_HOST=MONGODB_URL_STRING >> .env
 $ echo JWT_SECRET=yourSecret >> .env
 $ echo SENDGRID_API_KEY==yourSendgridAPIKey >> .env
 $ echo PORT=3000 >> .env
@@ -54,9 +57,6 @@ $ yarn run test:e2e
 # test coverage
 $ yarn run test:cov
 ```
-
-### CI/CD
-Make sure you have your environment variables in your [CircleCI](https://circleci.com)
 
 ### API Documentation
 The api documentation can be found on this url: [API](http://localhost:3000/api/v1/docs)

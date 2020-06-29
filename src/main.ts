@@ -26,8 +26,8 @@ async function bootstrap() {
   );
 
   const options = new DocumentBuilder()
-    .setTitle('Stackoverflow Clone Auth API')
-    .setDescription('Stackoverflow Clone Auth API description')
+    .setTitle('Stackoverflow Clone API')
+    .setDescription('Stackoverflow Clone API description')
     .setVersion('1.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access_token')
     .build();
