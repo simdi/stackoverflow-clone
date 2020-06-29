@@ -15,6 +15,7 @@ export interface IQuestion extends mongoose.Document {
   body: string;
   userId: string;
   vote: number;
+  subscribeToAnswer: boolean;
   answers: [any];
   user?: {};
   meta?: IMeta;
@@ -26,6 +27,7 @@ export const QuestionSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   body: { type: String, required: true, trim: true },
   vote: { type: Number, default: 0 },
+  subscribeToAnswer: { type: Boolean, default: false },
   answers: {
     type: [{
       userId: { type: Schema.Types.ObjectId, ref: 'User' },

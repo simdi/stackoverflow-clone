@@ -8,6 +8,12 @@ export class QuestionDTO {
   @IsString()
   title: string;
   @ApiProperty({
+    type: Boolean,
+    example: false
+  })
+  @IsString()
+  subscribeToAnswer: boolean;
+  @ApiProperty({
     type: String,
   })
   @IsString()

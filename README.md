@@ -23,6 +23,7 @@ $ touch .env
 $ echo MONGO_DB=stackoverflow-clone >> .env
 $ echo MONGO_HOST=127.0.0.1 >> .env
 $ echo JWT_SECRET=yourSecret >> .env
+$ echo SENDGRID_API_KEY==yourSendgridAPIKey >> .env
 $ echo PORT=3000 >> .env
 ```
 

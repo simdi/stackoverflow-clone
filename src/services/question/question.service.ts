@@ -8,7 +8,9 @@ import { CreatedDTO } from '../../dto/responses/created.dto';
 import { IVote } from '../../models/vote.schema';
 import { QuestionVoteDTO } from '../../dto/responses/updated.dto';
 import { FindDTO } from '../../dto/responses/find.dto';
-import { ErrorDTO } from 'src/dto/responses/error.dto';
+import { ErrorDTO } from '../../dto/responses/error.dto';
+import { EmailService } from '../email/email.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class QuestionService {
@@ -16,6 +18,8 @@ export class QuestionService {
     @InjectModel('Question') private readonly questionModel: Model<IQuestion>,
     @InjectModel('Vote') private readonly voteModel: Model<IVote>,
     private readonly helperService: HelperService,
+    private readonly emailService: EmailService,
+    private readonly userService: UserService,
   ) {}
 
   async create(question: QuestionDTO, user: any): Promise<CreatedDTO> {
@@ -155,6 +159,10 @@ export class QuestionService {
       const createAnswerByQuestionId = await this.questionModel.findByIdAndUpdate(questionId, {
         $push: { answers: { userId, body } }
       });
+      const { subscribeToAnswer } = createAnswerByQuestionId;
+      if(subscribeToAnswer) {
+        await this.sendMailToSubscribedUser(createAnswerByQuestionId.userId, createAnswerByQuestionId.title, body);
+      }
 
       if (createAnswerByQuestionId) {
         return { id: createAnswerByQuestionId._id };
@@ -164,6 +172,13 @@ export class QuestionService {
     } catch (error) {
       await this.helperService.catchValidationError(error);
     }
+  }
+
+  async sendMailToSubscribedUser(questionUserId: string, questionTitle: string, answer: string): Promise<void> {
+    // Get the user's email,
+    const questionUser = await this.userService.findById(questionUserId);
+    const { email } = questionUser;
+    this.emailService.sendMail(email, questionTitle, answer);
   }
 
 }

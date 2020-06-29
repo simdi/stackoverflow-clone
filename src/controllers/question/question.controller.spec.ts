@@ -1,11 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { JwtService, JwtModule } from '@nestjs/jwt';
 import { QuestionController } from './question.controller';
 import { QuestionService } from '../../services/question/question.service';
 import { IQuestion, QuestionSchema } from '../../models/question.schema';
 import { ErrorDTO } from '../../dto/responses/error.dto';
 import { VoteSchema } from '../../models/vote.schema';
 import { HelperService } from '../../shared/helpers/helper';
+import { EmailService } from '../../services/email/email.service';
+import { UserService } from '../../services/user/user.service';
+import { UserSchema } from '../../models/user.schema';
+import { AuthService } from '../../services/auth/auth.service';
 
 describe('Question Controller', () => {
   let controller: QuestionController;
@@ -17,6 +23,20 @@ describe('Question Controller', () => {
       providers: [
         QuestionService,
         HelperService,
+        UserService,
+        AuthService,
+        {
+          provide: EmailService,
+          useValue: MailerModule
+        },
+        {
+          provide: JwtService,
+          useClass: JwtModule,
+        },
+        {
+          provide: getModelToken('User'),
+          useValue: UserSchema
+        },
         {
           provide: getModelToken('Question'),
           useValue: QuestionSchema
@@ -98,6 +118,7 @@ describe('Question Controller', () => {
     };
     const payload = {
       title: "Calculate distance between two latitude-longitude points? (Haversine formula)",
+      subscribeToAnswer: false,
       body: "How do I calculate the distance between two points specified by latitude and longitude? \n For clarification, I'd like the distance in kilometers; the points use the WGS84 system and I'd like to understand the relative accuracies of the approaches available."
     };
     const badRequest: ErrorDTO | any = {

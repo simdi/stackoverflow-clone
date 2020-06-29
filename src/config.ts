@@ -28,6 +28,14 @@ const config = convict({
     env: 'PORT',
     arg: 'port'
   },
+  sendGrid: {
+    password: {
+      doc: 'SendGrid Password',
+      format: String,
+      default: 'password',
+      env: 'SENDGRID_API_KEY',
+    },
+  },
   mongo: {
     host: {
       doc: 'Database host name',

@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { JwtService, JwtModule } from '@nestjs/jwt';
 import { QuestionService } from './question.service';
 import { QuestionDTO } from '../../dto/question.dto';
 import { IQuestion, QuestionSchema } from '../../models/question.schema';
@@ -7,6 +9,10 @@ import { ErrorDTO } from '../../dto/responses/error.dto';
 import { CreatedDTO } from '../../dto/responses/created.dto';
 import { HelperService } from '../../shared/helpers/helper';
 import { VoteSchema } from '../../models/vote.schema';
+import { EmailService } from '../email/email.service';
+import { UserSchema } from '../../models/user.schema';
+import { UserService } from '../user/user.service';
+import { AuthService } from '../auth/auth.service';
 
 describe('QuestionService', () => {
   let service: QuestionService;
@@ -16,6 +22,24 @@ describe('QuestionService', () => {
       providers: [
         QuestionService,
         HelperService,
+        UserService,
+        AuthService,
+        {
+          provide: EmailService,
+          useValue: MailerModule
+        },
+        {
+          provide: JwtService,
+          useClass: JwtModule,
+        },
+        {
+          provide: getModelToken('User'),
+          useValue: UserSchema
+        },
+        {
+          provide: getModelToken('User'),
+          useValue: UserSchema
+        },
         {
           provide: getModelToken('Question'),
           useValue: QuestionSchema
@@ -96,6 +120,7 @@ describe('QuestionService', () => {
     };
     const payload: QuestionDTO = {
       title: "Calculate distance between two latitude-longitude points? (Haversine formula)",
+      subscribeToAnswer: false,
       body: "How do I calculate the distance between two points specified by latitude and longitude? \n For clarification, I'd like the distance in kilometers; the points use the WGS84 system and I'd like to understand the relative accuracies of the approaches available."
     };
     const badRequest: ErrorDTO | any = {
