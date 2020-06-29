@@ -44,10 +44,10 @@ aliases:
     - restore_cache: *restore_pkg_cache
     - run: *yarn_install
     - save_cache: *save_pkg_cache
-    - persist_to_workspace:
-        root: .
-        paths:
-         - node_modules
+    # - persist_to_workspace:
+    #     root: .
+    #     paths:
+    #      - node_modules
 
   - &prod_steps
     - checkout
