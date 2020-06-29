@@ -26,10 +26,10 @@ aliases:
     docker:
       - image: circleci/node:10.16
 
-  # - &wait_for_mongo
-  #   run:
-  #     name: Wait for MongoDB
-  #     command: dockerize -wait tcp://localhost:27017 -timeout 1m
+  - &wait_for_mongo
+    run:
+      name: Wait for MongoDB
+      command: dockerize -wait tcp://localhost:27017 -timeout 1m
 
   - &build_image_with_db
     working_directory: ~/stackoverflow-clone
@@ -39,6 +39,7 @@ aliases:
 
   - &dependencies
     - checkout
+    - *pkg_checksum
     - *attach_workspace
     - restore_cache: *restore_pkg_cache
     - run: *yarn_install
@@ -56,14 +57,11 @@ aliases:
     - run:
         name: Running unit test
         command: yarn test
-    - run:
-        name: Running e2e test
-        command: yarn test:e2e
   
-    - persist_to_workspace:
-        root: .
-        paths:
-         - node_modules
+    # - persist_to_workspace:
+    #     root: .
+    #     paths:
+    #      - node_modules
 
   - &test_steps
     - checkout
@@ -73,6 +71,13 @@ aliases:
     - run:
         name: Running unit test
         command: yarn test
+
+  - &test_e2e_steps
+    - checkout
+    - *pkg_checksum
+    - *wait_for_mongo
+    - *attach_workspace
+    - restore_cache: *restore_pkg_cache
     - run:
         name: Running e2e test
         command: yarn test:e2e
@@ -92,6 +97,9 @@ workflows:
 
       - test:
           requires: *builder
+      
+      - test_e2e:
+          requires: *builder
 
   # build_and_deploy:
   #   jobs:
@@ -106,8 +114,12 @@ jobs:
     steps: *dependencies
 
   test:
-    <<: *build_image_with_db
+    <<: *build_image
     steps: *test_steps
+
+  test_e2e:
+    <<: *build_image_with_db
+    steps: *test_e2e_steps
 
   "Production":
     <<: *build_image
