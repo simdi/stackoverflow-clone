@@ -1,25 +1,25 @@
 aliases:
-  # - &pkg_checksum
-  #   run: find . packages/* \( -name "package.json" \) -mindepth 1 -maxdepth 1  -exec shasum {} \; > checksums
+  - &pkg_checksum
+    run: find . -name "package.json" -mindepth 1 -maxdepth 1  -exec shasum {} \; > checksums
 
-  # - &restore_pkg_cache
-  #   keys:
-  #     - v1-node-{{ checksum "checksums" }}
-  #     - v1-node-
+  - &restore_pkg_cache
+    keys:
+      - v1-node-{{ checksum "checksums" }}
+      - v1-node-
 
-  # - &save_pkg_cache
-  #   name: Saving package cache
-  #   key: v1-node-{{ checksum "checksums" }}
-  #   paths:
-  #     - node_modules
+  - &save_pkg_cache
+    name: Saving package cache
+    key: v1-node-{{ checksum "checksums" }}
+    paths:
+      - node_modules
 
   - &yarn_install
     name: Install packages
     command: yarn install
 
-  # - &attach_workspace
-  #   attach_workspace:
-  #     at: ~/stackoverflow-clone
+  - &attach_workspace
+    attach_workspace:
+      at: ~/stackoverflow-clone
 
   - &build_image
     working_directory: ~/stackoverflow-clone
@@ -39,15 +39,15 @@ aliases:
 
   - &dependencies
     - checkout
-    # - *attach_workspace
-    # - restore_cache: *restore_pkg_cache
+    - *attach_workspace
+    - restore_cache: *restore_pkg_cache
     - run: *yarn_install
-    # - save_cache: *save_pkg_cache
+    - save_cache: *save_pkg_cache
 
   - &prod_steps
     - checkout
-    # - *attach_workspace
-    # - restore_cache: *restore_pkg_cache
+    - *attach_workspace
+    - restore_cache: *restore_pkg_cache
     - run:
         name: Create production build files
         command: |
@@ -67,9 +67,9 @@ aliases:
 
   - &test_steps
     - checkout
-    # - *pkg_checksum
-    # - *attach_workspace
-    # - restore_cache: *restore_pkg_cache
+    - *pkg_checksum
+    - *attach_workspace
+    - restore_cache: *restore_pkg_cache
     - run:
         name: Running unit test
         command: yarn test
