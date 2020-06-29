@@ -44,28 +44,15 @@ aliases:
     - restore_cache: *restore_pkg_cache
     - run: *yarn_install
     - save_cache: *save_pkg_cache
-    # - persist_to_workspace:
-    #     root: .
-    #     paths:
-    #      - node_modules
 
   - &prod_steps
     - checkout
+    - *pkg_checksum
     - *attach_workspace
     - restore_cache: *restore_pkg_cache
     - run:
         name: Create production build files
-        command: |
-            sudo chmod +x ./.circleci/test.sh
-            ./.circleci/test.sh build Production
-    - run:
-        name: Running unit test
-        command: yarn test
-  
-    # - persist_to_workspace:
-    #     root: .
-    #     paths:
-    #      - node_modules
+        command: yarn build
 
   - &test_steps
     - checkout
@@ -105,12 +92,12 @@ workflows:
       - test_e2e:
           requires: *builder
 
-  # build_and_deploy:
-  #   jobs:
-  #     - build
+  build_and_deploy:
+    jobs:
+      - build
 
-  #     - "Production":
-  #         requires: *builder
+      - "Production":
+          requires: *builder
 
 jobs:
   build:
