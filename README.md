@@ -4,6 +4,11 @@
 
 The stackoverflow-clone is a javascript application built with Nestjs, and MongoDB.
 
+The application is more like stackoverflow; a Q&A application where users can ask questions and answer questions as well. Users can subscribe to receive email notification when a user answers his/her question. Users can downvote (deduct 1 point from the number of votes) and upvote (add 1 point to the number of votes) a question. Users can also search for questions, answers, and their fellow users. The search algorithm used for the search is the partial text search algorithm. The user is required to be logged in to perform all actions stated herein. The authentiation strategy used is the JWT strategy. Every user that is authenticated is authorised to perform all operations.
+
+Here are a non-exhaustive list of patterns used in this application: MVC (Model-View-Controller) pattern, DI (Dependency Injection) pattern, OOP (Object Oriented Programming) pattern, FP (Functional Programming) pattern.
+This application uses heavily the Module/Component system for reusability and testability.
+
 ## Prerequisites
 * node >= 9.X
   * All OSes: [click here for installation instructions](https://nodejs.org/en/download/)
