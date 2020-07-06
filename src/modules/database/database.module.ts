@@ -1,11 +1,28 @@
-import { Module, Global } from '@nestjs/common';
-import mongooseConnection from '../../db';
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import config from '../../config';
 import { HelperService } from '../../shared/helpers/helper';
 
-@Global()
+const { host, database, port } = config.get('mongo');
+export const url = `mongodb://${host}:${port}/${database}`;
+
+export const passportModuleOptions = { defaultStrategy: 'jwt' };
+
+export const jwtModuleOptions = {
+  secret: config.get('jwt.secret'),
+  signOptions: { expiresIn: config.get('jwt.expires') },
+};
+
+export const mongoDBOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+  useFindAndModify: false
+};
+
 @Module({
   imports: [
-    mongooseConnection,
+    MongooseModule.forRoot(url, mongoDBOptions),
   ],
   providers: [HelperService],
   exports: [HelperService]

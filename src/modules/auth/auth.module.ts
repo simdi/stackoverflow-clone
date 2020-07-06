@@ -7,7 +7,7 @@ import { UserService } from '../../services/user/user.service';
 import { AuthService } from '../../services/auth/auth.service';
 import { UserSchema } from '../../models/user.schema';
 import { JwtStrategy } from '../../services/auth/jwt.service';
-import { passportModuleOptions, jwtModuleOptions } from '../../db';
+import { passportModuleOptions, jwtModuleOptions } from '../database/database.module';
 import { AuthController } from '../../controllers/auth/auth.controller';
 import { HelperService } from '../../shared/helpers/helper';
 

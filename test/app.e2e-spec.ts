@@ -3,7 +3,7 @@ import { INestApplication, HttpStatus } from '@nestjs/common';
 import * as mongoose from 'mongoose';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
-import { url, mongoDBOptions } from '../src/db';
+import { url, mongoDBOptions } from '../src/modules/database/database.module';
 
 afterAll(async (done) => {
   const connection = await mongoose.connect(url, mongoDBOptions);
